@@ -2,6 +2,10 @@
 
 Alterações realizadas na extensão.
 
+## [2.0.9] - 02/07/2026
+### Novidades
+  - Adicionar funções internas da Senior para o *contexto* ERP.
+
 ## [2.0.8] - 01/07/2026
 ### Atualizar
   - Corrigir o *contexto* de diversas funções internas da Senior.

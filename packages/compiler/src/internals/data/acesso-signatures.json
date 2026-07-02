@@ -86,5 +86,25 @@
     ],
     "docUrl": "https://documentacao.senior.com.br/ronda-senior/6.10.4/ferramentas-de-customizacoes/funcoes-para-regras-gerador-de-relatorios/nomecomputador.htm",
     "docVersion": "6.10.4"
+  },
+  {
+    "name": "RetornaAscII",
+    "documentation": "Esta função retorna o caractere ASCII de um número.",
+    "params": [
+      {
+        "name": "CodigoASCII",
+        "type": "Numero",
+        "isReturnValue": false,
+        "documentation": "Variável tipo Número da qual se quer o retorno em ASCII"
+      },
+      {
+        "name": "Retorno",
+        "type": "Alfa",
+        "isReturnValue": true,
+        "documentation": "Caracter ASCII correspondente ao Número do primeiro parâmetro"
+      }
+    ],
+    "docUrl": "https://documentacao.senior.com.br/ronda-senior/6.10.4/ferramentas-de-customizacoes/funcoes-para-regras-gerador-de-relatorios/retornaascll.htm",
+    "docVersion": "6.10.4"
   }
 ]

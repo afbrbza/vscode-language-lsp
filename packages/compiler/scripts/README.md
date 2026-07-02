@@ -58,5 +58,42 @@ node packages/compiler/scripts/hcm-sync-6104-variables.mjs --import-missing
 node packages/compiler/scripts/hcm-sync-6104-variables.mjs --validate-one cFalso
 ```
 
+## ERP Sync (5.10.4)
+
+### Gerar relatório de funções (dry-run)
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs
+```
+
+Especificar arquivo HTML customizado:
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs --indexHtml caminho/para/indice_funcoes.html
+```
+
+### Aplicar docUrl/docVersion em funções já cadastradas
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs --apply-docurl
+```
+
+### Validar 1 função (parâmetros/tipos) contra a documentação
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs --validate-one RetornaAscii
+```
+
+### Importar todas as funções faltantes
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs --import-all-missing
+```
+
+### Gerar exemplo de importação de funções (allow-list)
+```bash
+node packages/compiler/scripts/erp-sync-5.10.4.mjs --import-example
+```
+
+### URL canônica ERP
+Para automação/parse, usamos a URL **direta**:
+
+`https://documentacao.senior.com.br/gestaoempresarialerp/5.10.4/regra_funcoes/<slug>.htm`
+
 ## Saída
 Os relatórios são gravados em: `docs/reports/`
