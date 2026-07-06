@@ -77,7 +77,6 @@
     "esbuild": "^0.28.1",
     "fast-glob": "^3.3.2",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.11"

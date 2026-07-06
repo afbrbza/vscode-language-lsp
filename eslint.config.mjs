@@ -1,4 +1,3 @@
-import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -13,30 +12,18 @@ export default defineConfig([
     '**/*.js.map',
     'v1/**'
   ]),
-  {
-    files: ['scripts/**/*.mjs'],
-    languageOptions: {
-      globals: {
-        ...globals.node
+  ...tseslint.configs.recommended
+    .map((config) => ({
+      ...config,
+      files: ['packages/**/*.{ts,mts,cts}'],
+      languageOptions: {
+        ...(config.languageOptions ?? {}),
+        globals: {
+          ...globals.node,
+          ...(config.languageOptions?.globals ?? {})
+        }
       }
-    },
-    ...js.configs.recommended,
-    rules: {
-      ...js.configs.recommended.rules,
-      'no-console': 'off'
-    }
-  },
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: ['packages/**/*.{ts,mts,cts}'],
-    languageOptions: {
-      ...(config.languageOptions ?? {}),
-      globals: {
-        ...globals.node,
-        ...(config.languageOptions?.globals ?? {})
-      }
-    }
-  })),
+    })),
   {
     files: ['packages/**/*.{ts,mts,cts}', 'scripts/**/*.{ts,mts,cts}'],
     rules: {
