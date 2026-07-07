@@ -24,6 +24,7 @@ import
     buildSymbolQueryScopeForSingleFile,
     getContextSymbols,
     getCursorMethodNames,
+    compileSingleFile,
     listListaMethods,
     listListaProperties,
     prepareRename,
@@ -2924,6 +2925,20 @@ async function getSymbolsForFallbackDocument(doc: TextDocument): Promise<SymbolI
   return result.symbols ?? [];
 }
 
+async function getDocumentSymbols(doc: TextDocument): Promise<SymbolInfo[]>
+{
+  const filePath = toFsPath(doc.uri);
+  const context = findContextForFile(filePath);
+  const system = getCompilerSystemForFile(filePath, context);
+  const result = await compileSingleFile({
+    filePath,
+    text: doc.getText(),
+    system,
+    includeSemantics: false
+  });
+  return result.symbols ?? [];
+}
+
 async function getSymbolQueryScopeForDocument(doc: TextDocument): Promise<{
   filePath: string;
   context: ResolvedContext | null;
@@ -5428,6 +5443,7 @@ registerLanguageHandlers({
   isInsideStringLiteral,
   getSymbolsForContext,
   getSymbolsForFallbackDocument,
+  getDocumentSymbols,
   completionItem,
   snippetItem,
   listaMethodCompletionItem,

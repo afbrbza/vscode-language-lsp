@@ -2,6 +2,13 @@
 
 Alterações realizadas na extensão.
 
+## [2.0.10] - 07/07/2026
+### Novidades
+  - Implementado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE) para arquivos `.lsp` e `.lspt`.
+    - Funções (`funcao NOME(); { }`) exibidas como símbolos do tipo *Function*, com parâmetros e variáveis do corpo como filhos na árvore.
+    - Declarações (`Definir funcao NOME();`) exibidas como símbolos do tipo *Variable* com detail "Funcao".
+    - Variáveis de escopo global exibidas no nível raiz.
+
 ## [2.0.9] - 02/07/2026
 ### Novidades
   - Adicionar funções internas da Senior para o *contexto* ERP.

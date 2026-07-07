@@ -230,6 +230,7 @@ export function registerLifecycleHandlers(input: {
         renameProvider: { prepareProvider: true },
         documentFormattingProvider: true,
         documentRangeFormattingProvider: false,
+        documentSymbolProvider: true,
         diagnosticProvider: { interFileDependencies: true, workspaceDiagnostics: false },
         semanticTokensProvider: {
           legend: {
