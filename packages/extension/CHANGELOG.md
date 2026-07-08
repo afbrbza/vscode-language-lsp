@@ -2,6 +2,10 @@
 
 Alterações realizadas na extensão.
 
+## [2.0.11] - 07/07/2026
+### Novidades
+  - Símbolos implícitos de `Numero`: variáveis declaradas via `v_numero;` ou `v_numero = 0;` (sem `Definir Numero`) agora aparecem no OUTLINE como símbolos do tipo *Variable*.
+
 ## [2.0.10] - 07/07/2026
 ### Novidades
   - Implementado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE) para arquivos `.lsp` e `.lspt`.

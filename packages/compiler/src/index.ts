@@ -345,6 +345,7 @@ function parseErrorToDiagnosticCode(code: ParseErrorCode): (typeof DiagnosticCod
       return DiagnosticCodes.SyntaxMissingSpaceBeforeInlineComment;
     case 'SYN_UNCLOSED_BLOCK':
     case 'SYN_EXPECTED_SEMICOLON':
+    case 'SYN_MISSING_EQUALS':
     case 'SYN_GENERIC':
     default:
       return DiagnosticCodes.SyntaxError;
@@ -362,6 +363,7 @@ function shouldEmitParseDiagnostic(code: ParseErrorCode): boolean
     || code === 'SYN_MISSING_SPACE_BEFORE_INLINE_COMMENT'
     || code === 'SYN_UNCLOSED_BLOCK'
     || code === 'SYN_EXPECTED_SEMICOLON'
+    || code === 'SYN_MISSING_EQUALS'
   );
 }
 
