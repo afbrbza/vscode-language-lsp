@@ -17,11 +17,11 @@
     "r:sync": "node scripts/readme-sync.mjs"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.1.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.62.1",
+    "typescript-eslint": "^8.63.0",
     "vitest": "^4.1.10"
   },
   "dependencies": {

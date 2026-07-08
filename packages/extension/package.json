@@ -72,7 +72,6 @@
     "sql-formatter": "^15.8.2"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
     "@types/vscode": "^1.125.0",
     "esbuild": "^0.28.1",
     "fast-glob": "^3.3.2",
