@@ -53,7 +53,7 @@ describe('symbol index', () => {
     expect(table?.tableOccurrences).toBe(100);
     expect(table?.tableColumns?.length).toBe(2);
   });
-  it('deduplicates variables by lexical scope', () => {
+  it('deduplicates variables by global or function scope', () => {
     const source = createSourceFile('/tmp/scoped-symbols.lsp', [
       'Funcao Primeira()',
       'Inicio',
@@ -72,5 +72,64 @@ describe('symbol index', () => {
 
     expect(locals).toHaveLength(2);
     expect(new Set(locals.map((symbol) => symbol.scopeId)).size).toBe(2);
+  });
+  it('does not create scopes for nested control-flow blocks', () => {
+    const source = createSourceFile('/tmp/two-level-scopes.lsp', [
+      'Definir Alfa aPodeCancelar;',
+      'Definir Numero nPodeCancelar;',
+      'nPodeCancelar = cFalso;',
+      'Se (nPodeCancelar = cFalso)',
+      'Inicio',
+      '  nPodeCancelar = cVerdadeiro;',
+      'Fim;',
+      'aPodeCancelar = "false";',
+      'Se (nPodeCancelar = cVerdadeiro)',
+      'Inicio',
+      '  aPodeCancelar = "true";',
+      'Fim;'
+    ].join('\n'));
+    const { program } = parseFiles([source]);
+
+    const variables = getProgramSymbols(program)
+      .filter((symbol) => symbol.kind === 'variable');
+
+    expect(variables.map((symbol) => [symbol.name, symbol.typeName, symbol.scopeId])).toEqual([
+      ['aPodeCancelar', 'Alfa', 'global'],
+      ['nPodeCancelar', 'Numero', 'global']
+    ]);
+  });
+
+  it('keeps nested declarations in the containing function scope', () => {
+    const source = createSourceFile('/tmp/function-block-scope.lsp', [
+      'Funcao Teste()',
+      'Inicio',
+      '  Definir Numero nLocal;',
+      '  Se (nLocal = 0)',
+      '  Inicio',
+      '    Definir Numero nLocal;',
+      '  Fim;',
+      'Fim;'
+    ].join('\n'));
+    const { program } = parseFiles([source]);
+
+    const locals = getProgramSymbols(program)
+      .filter((symbol) => symbol.kind === 'variable' && symbol.nameNormalized === 'nlocal');
+
+    expect(locals).toHaveLength(1);
+    expect(locals[0]?.scopeId).not.toBe('global');
+  });
+  it('prefers an explicit declaration over an earlier implicit assignment', () => {
+    const source = createSourceFile('/tmp/explicit-after-assignment.lsp', [
+      'aResultado = "ok";',
+      'Definir Alfa aResultado;'
+    ].join('\n'));
+    const { program } = parseFiles([source]);
+
+    const variables = getProgramSymbols(program)
+      .filter((symbol) => symbol.kind === 'variable' && symbol.nameNormalized === 'aresultado');
+
+    expect(variables).toHaveLength(1);
+    expect(variables[0]?.typeName).toBe('Alfa');
+    expect(variables[0]?.implicit).toBeUndefined();
   });
 });

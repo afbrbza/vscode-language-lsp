@@ -1,6 +1,7 @@
 import { buildContext, type ContentOverrides, type ValidationContextConfig } from './context-manager';
 import { parseFiles } from '../parser/parser';
 import type { ExpressionNode, ParamNode, ProgramNode, StatementNode, TypeName } from '../parser/ast';
+import { getInternalConstant } from '../internals/members/constants';
 import { casefold } from '../utils/casefold';
 
 export type SymbolKind = 'variable' | 'function';
@@ -13,6 +14,8 @@ export type SymbolInfo = {
   params?: ParamNode[] | undefined;
   declared?: boolean | undefined;
   implemented?: boolean | undefined;
+  implicit?: boolean | undefined;
+  internal?: boolean | undefined;
   range?: { start: { line: number; character: number }; end: { line: number; character: number } } | undefined;
   nameRange?: { start: { line: number; character: number }; end: { line: number; character: number } } | undefined;
   scopeId?: string | undefined;
@@ -38,7 +41,7 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext, sc
       typeName: stmt.typeName,
       range: stmt.range,
       nameRange: stmt.nameRange,
-      scopeId: stmt.scopeId ?? scopeId,
+      scopeId,
       sourcePath: stmt.sourcePath
     };
     if (stmt.typeName === 'Lista') symbol.listFields = [];
@@ -77,7 +80,7 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext, sc
       implemented: stmt.kind === 'FuncImpl',
       range: stmt.range,
       nameRange: stmt.nameRange,
-      scopeId: stmt.scopeId ?? scopeId,
+      scopeId,
       sourcePath: stmt.sourcePath
     });
     return;
@@ -91,9 +94,11 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext, sc
         name: stmt.expr.left.name,
         nameNormalized: stmt.expr.left.nameNormalized,
         typeName: 'Numero',
+        implicit: true,
+        internal: Boolean(getInternalConstant(stmt.expr.left.name)),
         range: stmt.range,
         nameRange: stmt.expr.left.range,
-        scopeId: stmt.scopeId ?? scopeId,
+        scopeId,
         sourcePath: stmt.sourcePath
       });
       return;
@@ -223,24 +228,22 @@ function visitStatementTree(
   scopeId: string,
   visit: (node: StatementNode, effectiveScopeId: string) => void
 ): void {
-  const effectiveScopeId = stmt.scopeId ?? scopeId;
-  visit(stmt, effectiveScopeId);
+  visit(stmt, scopeId);
   switch (stmt.kind) {
     case 'Block': {
-      const childScopeId = stmt.scopeId ?? lexicalScopeKey(stmt);
-      for (const child of stmt.statements) visitStatementTree(child, childScopeId, visit);
+      for (const child of stmt.statements) visitStatementTree(child, scopeId, visit);
       return;
     }
     case 'If':
-      if (stmt.thenBranch) visitStatementTree(stmt.thenBranch, effectiveScopeId, visit);
-      if (stmt.elseBranch) visitStatementTree(stmt.elseBranch, effectiveScopeId, visit);
+      if (stmt.thenBranch) visitStatementTree(stmt.thenBranch, scopeId, visit);
+      if (stmt.elseBranch) visitStatementTree(stmt.elseBranch, scopeId, visit);
       return;
     case 'While':
-      if (stmt.body) visitStatementTree(stmt.body, effectiveScopeId, visit);
+      if (stmt.body) visitStatementTree(stmt.body, scopeId, visit);
       return;
     case 'For':
-      if (stmt.init) visitStatementTree(stmt.init, effectiveScopeId, visit);
-      if (stmt.body) visitStatementTree(stmt.body, effectiveScopeId, visit);
+      if (stmt.init) visitStatementTree(stmt.init, scopeId, visit);
+      if (stmt.body) visitStatementTree(stmt.body, scopeId, visit);
       return;
     case 'FuncImpl':
       if (stmt.body) visitStatementTree(stmt.body, lexicalScopeKey(stmt), visit);
@@ -308,7 +311,8 @@ function collectFromProgram(program: ProgramNode): SymbolInfo[] {
     const key = sym.kind === 'function'
       ? `${baseKey}:${sym.sourcePath}:${sym.range?.start.line ?? 0}`
       : `${baseKey}:${sym.scopeId ?? 'global'}`;
-    if (!unique.has(key)) {
+    const existing = unique.get(key);
+    if (!existing || (existing.implicit && !sym.implicit)) {
       unique.set(key, sym);
     }
   }

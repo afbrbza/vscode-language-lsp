@@ -528,7 +528,7 @@ export function registerLanguageHandlers(deps: RegisterLanguageHandlersDeps): vo
 
 export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): DocumentSymbol[]
 {
-  const docSymbols = symbols.filter((s) => s.sourcePath === fsPath && s.range);
+  const docSymbols = symbols.filter((s) => s.sourcePath === fsPath && s.range && !s.internal);
 
   const funcImpls: SymbolInfo[] = [];
   const funcDecls: SymbolInfo[] = [];
