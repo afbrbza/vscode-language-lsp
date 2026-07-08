@@ -1,30 +1,29 @@
-import
-  {
-    CompletionItem,
-    CompletionItemKind,
-    MarkupKind,
-    SymbolKind,
-    SymbolTag,
-    type CompletionParams,
-    type Connection,
-    type DefinitionParams,
-    type DocumentSymbol,
-    type DocumentSymbolParams,
-    type Hover,
-    type HoverParams,
-    type ImplementationParams,
-    type Location,
-    type Position,
-    type PrepareRenameParams,
-    type Range,
-    type RenameParams,
-    type SignatureHelp,
-    type SignatureHelpParams,
-    type TextEdit,
-    type WorkspaceEdit
-  } from 'vscode-languageserver/node';
 import type { InternalSignatureDoc, SymbolInfo } from '@lsp/compiler';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
+import
+{
+  CompletionItem,
+  CompletionItemKind,
+  MarkupKind,
+  SymbolKind,
+  type CompletionParams,
+  type Connection,
+  type DefinitionParams,
+  type DocumentSymbol,
+  type DocumentSymbolParams,
+  type Hover,
+  type HoverParams,
+  type ImplementationParams,
+  type Location,
+  type Position,
+  type PrepareRenameParams,
+  type Range,
+  type RenameParams,
+  type SignatureHelp,
+  type SignatureHelpParams,
+  type TextEdit,
+  type WorkspaceEdit
+} from 'vscode-languageserver/node';
 import type { ResolvedContext } from './server-runtime';
 
 type WordToken = { word: string; start: number; end: number };
@@ -526,7 +525,7 @@ export function registerLanguageHandlers(deps: RegisterLanguageHandlersDeps): vo
   });
 }
 
-function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): DocumentSymbol[]
+export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): DocumentSymbol[]
 {
   const docSymbols = symbols.filter((s) => s.sourcePath === fsPath && s.range);
 

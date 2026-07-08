@@ -33,4 +33,15 @@ describe('syntax errors', () => {
     const hasBracketError = parseErrors.some((e) => e.message.toLowerCase().includes('colchete'));
     expect(hasBracketError).toBe(true);
   });
+
+  it("reports SYN_MISSING_EQUALS for an identifier without '='", () => {
+    const { parseErrors } = parse('nValor;\n');
+    const missingEquals = parseErrors.find((e) => e.code === 'SYN_MISSING_EQUALS');
+
+    expect(missingEquals).toBeTruthy();
+    expect(missingEquals?.range).toEqual({
+      start: { line: 0, character: 0 },
+      end: { line: 0, character: 6 }
+    });
+  });
 });
