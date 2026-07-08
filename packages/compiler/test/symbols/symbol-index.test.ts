@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { getContextSymbols } from '../../src';
+import { getContextSymbols, getProgramSymbols } from '../../src';
+import { parseFiles } from '../../src/parser/parser';
+import { createSourceFile } from '../../src/source/source-file';
 
 describe('symbol index', () => {
   it('extracts cursor fields from Cursor.SQL SELECT', async () => {
@@ -50,5 +52,25 @@ describe('symbol index', () => {
     expect(table?.typeName).toBe('Tabela');
     expect(table?.tableOccurrences).toBe(100);
     expect(table?.tableColumns?.length).toBe(2);
+  });
+  it('deduplicates variables by lexical scope', () => {
+    const source = createSourceFile('/tmp/scoped-symbols.lsp', [
+      'Funcao Primeira()',
+      'Inicio',
+      '  Definir Numero nLocal;',
+      '  Definir Numero nLocal;',
+      'Fim;',
+      'Funcao Segunda()',
+      'Inicio',
+      '  Definir Numero nLocal;',
+      'Fim;'
+    ].join('\n'));
+    const { program } = parseFiles([source]);
+
+    const locals = getProgramSymbols(program)
+      .filter((symbol) => symbol.kind === 'variable' && symbol.nameNormalized === 'nlocal');
+
+    expect(locals).toHaveLength(2);
+    expect(new Set(locals.map((symbol) => symbol.scopeId)).size).toBe(2);
   });
 });

@@ -14,6 +14,8 @@ export type SymbolInfo = {
   declared?: boolean | undefined;
   implemented?: boolean | undefined;
   range?: { start: { line: number; character: number }; end: { line: number; character: number } } | undefined;
+  nameRange?: { start: { line: number; character: number }; end: { line: number; character: number } } | undefined;
+  scopeId?: string | undefined;
   sourcePath: string;
   listFields?: string[] | undefined;
   cursorFields?: string[] | undefined;
@@ -27,7 +29,7 @@ type SymbolCollectContext = {
   firstCursorByName: Map<string, SymbolInfo>;
 };
 
-function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext): void {
+function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext, scopeId: string): void {
   if (stmt.kind === 'VarDecl') {
     const symbol: SymbolInfo = {
       kind: 'variable',
@@ -35,6 +37,8 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext): v
       nameNormalized: stmt.nameNormalized,
       typeName: stmt.typeName,
       range: stmt.range,
+      nameRange: stmt.nameRange,
+      scopeId: stmt.scopeId ?? scopeId,
       sourcePath: stmt.sourcePath
     };
     if (stmt.typeName === 'Lista') symbol.listFields = [];
@@ -72,6 +76,8 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext): v
       declared: stmt.kind === 'FuncDecl',
       implemented: stmt.kind === 'FuncImpl',
       range: stmt.range,
+      nameRange: stmt.nameRange,
+      scopeId: stmt.scopeId ?? scopeId,
       sourcePath: stmt.sourcePath
     });
     return;
@@ -86,6 +92,8 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext): v
         nameNormalized: stmt.expr.left.nameNormalized,
         typeName: 'Numero',
         range: stmt.range,
+        nameRange: stmt.expr.left.range,
+        scopeId: stmt.scopeId ?? scopeId,
         sourcePath: stmt.sourcePath
       });
       return;
@@ -206,25 +214,36 @@ function collectCursorFields(expr: ExpressionNode, ctx: SymbolCollectContext): v
   if (expr.kind === 'Paren' && expr.expr) collectCursorFields(expr.expr, ctx);
 }
 
-function visitStatementTree(stmt: StatementNode, visit: (node: StatementNode) => void): void {
-  visit(stmt);
+function lexicalScopeKey(stmt: StatementNode): string {
+  return `${stmt.kind}:${stmt.sourcePath}:${stmt.orderKey.fileIndex}:${stmt.orderKey.startOffset}`;
+}
+
+function visitStatementTree(
+  stmt: StatementNode,
+  scopeId: string,
+  visit: (node: StatementNode, effectiveScopeId: string) => void
+): void {
+  const effectiveScopeId = stmt.scopeId ?? scopeId;
+  visit(stmt, effectiveScopeId);
   switch (stmt.kind) {
-    case 'Block':
-      for (const child of stmt.statements) visitStatementTree(child, visit);
+    case 'Block': {
+      const childScopeId = stmt.scopeId ?? lexicalScopeKey(stmt);
+      for (const child of stmt.statements) visitStatementTree(child, childScopeId, visit);
       return;
+    }
     case 'If':
-      if (stmt.thenBranch) visitStatementTree(stmt.thenBranch, visit);
-      if (stmt.elseBranch) visitStatementTree(stmt.elseBranch, visit);
+      if (stmt.thenBranch) visitStatementTree(stmt.thenBranch, effectiveScopeId, visit);
+      if (stmt.elseBranch) visitStatementTree(stmt.elseBranch, effectiveScopeId, visit);
       return;
     case 'While':
-      if (stmt.body) visitStatementTree(stmt.body, visit);
+      if (stmt.body) visitStatementTree(stmt.body, effectiveScopeId, visit);
       return;
     case 'For':
-      if (stmt.init) visitStatementTree(stmt.init, visit);
-      if (stmt.body) visitStatementTree(stmt.body, visit);
+      if (stmt.init) visitStatementTree(stmt.init, effectiveScopeId, visit);
+      if (stmt.body) visitStatementTree(stmt.body, effectiveScopeId, visit);
       return;
     case 'FuncImpl':
-      if (stmt.body) visitStatementTree(stmt.body, visit);
+      if (stmt.body) visitStatementTree(stmt.body, lexicalScopeKey(stmt), visit);
       return;
     default:
       return;
@@ -275,8 +294,8 @@ function collectFromProgram(program: ProgramNode): SymbolInfo[] {
   };
   for (const file of program.files) {
     for (const stmt of file.statements) {
-      visitStatementTree(stmt, (node) => {
-        collectFromStatement(node, ctx);
+      visitStatementTree(stmt, 'global', (node, scopeId) => {
+        collectFromStatement(node, ctx, scopeId);
         collectExpressionArtifactsFromStatement(node, ctx);
       });
     }
@@ -286,7 +305,9 @@ function collectFromProgram(program: ProgramNode): SymbolInfo[] {
   for (const sym of ctx.symbols) {
     const baseKey = `${sym.kind}:${casefold(sym.name)}`;
     // Keep all function entries (decl + impl) to enable go-to-definition/implementation.
-    const key = sym.kind === 'function' ? `${baseKey}:${sym.sourcePath}:${sym.range?.start.line ?? 0}` : baseKey;
+    const key = sym.kind === 'function'
+      ? `${baseKey}:${sym.sourcePath}:${sym.range?.start.line ?? 0}`
+      : `${baseKey}:${sym.scopeId ?? 'global'}`;
     if (!unique.has(key)) {
       unique.set(key, sym);
     }
