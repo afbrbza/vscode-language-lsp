@@ -80,7 +80,8 @@ Motivação e notas técnicas:
 
 ## [2.0.3] - 28/05/2026
 ### Atualizar
-  - Ajustar o formatador para normalizar operadores lógicos (`e`/`ou`) em expressões multilinha de `Se`, `Enquanto` e `Para`, movendo o operador do fim da linha anterior para o início da linha de continuação.
+  - Ajustar o formatador para normalizar operadores lógicos (`e`/`ou`) em expressões multilinha de `Se`
+  - `Enquanto` e `Para`, movendo o operador do fim da linha anterior para o início da linha de continuação.
   - Preservar comentários inline ao normalizar expressões lógicas multilinha, mantendo o padrão TS-like do formatador.
 
 ## [2.0.2] - 06/05/2026
