@@ -54,6 +54,7 @@ export type ParseErrorCode =
   | 'SYN_MISSING_SPACE_BEFORE_INLINE_COMMENT'
   | 'SYN_UNCLOSED_BLOCK'
   | 'SYN_EXPECTED_SEMICOLON'
+  | 'SYN_MISSING_EQUALS'
   | 'SYN_GENERIC';
 
 const NORM_LITERAL_CACHE = new Map<string, string>();
@@ -922,6 +923,15 @@ class Parser {
     if (!expr) {
       this.synchronize();
       return this.parseError(start, 'Expressão inválida');
+    }
+
+    if (expr.kind === 'Identifier' && !inForHeader) {
+      this.errors.push({
+        code: 'SYN_MISSING_EQUALS' as ParseErrorCode,
+        message: "Erro na pontuação, falta '='",
+        range: expr.range,
+        sourcePath: this.source.path
+      });
     }
 
     const base = this.nodeBase('ExprStmt', start, this.lastTokenOf(expr));
