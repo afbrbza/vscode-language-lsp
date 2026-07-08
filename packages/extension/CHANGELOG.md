@@ -5,6 +5,41 @@ Alterações realizadas na extensão.
 ## [2.0.11] - 08/07/2026
 ### Novidades
   - Símbolos implícitos de `Numero`: variáveis declaradas via `v_numero;` ou `v_numero = 0;` (sem `Definir Numero`) agora aparecem no OUTLINE como símbolos do tipo *Variable*.
+  - Adicionadas funções do *Gerador de Relatórios* (tecnologia 5.10.4) ao contexto SENIOR:
+    - AdicionaDadosGrade
+    - AlteraControle
+    - CancelarRelatorio
+    - CarregaImagemControle
+    - CarregaImgVetorialControle
+    - CodigoEspNivel
+    - ConfiguraPontoGrafico
+    - CriaView
+    - DataInicialFinal
+    - DateToDB
+    - DeleteFieldSQL
+    - DesCamLista
+    - DetPrimConector
+    - InsClauSQLCampoDireto
+    - InsClauSQLField
+    - InsClauSQLFrom
+    - InsClauSQLGroupBy
+    - InsClauSQLOrderBy
+    - InsClauSQLWhere
+    - InsEspAlinhDireita
+    - LimpaDadosGrade
+    - LimpaDadosGrafico
+    - ListaSecao
+    - MontarSQLHisCampo
+    - MontarSQLHisCampoSeq
+    - OrdenacaoSelecionada
+    - PreenchePagina
+    - RetornaCampoAlfaTabela
+    - RetornaCampoNumeroTabela
+    - SaltarPagina
+    - SelecionaImpressora
+    - SubstituiFrom
+    - TruncaDadosGrade
+    - UltimoRegistro
 
 ### Atualizações
   - Aprimorado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE):
@@ -22,11 +57,11 @@ Alterações realizadas na extensão.
 
 ## [2.0.9] - 02/07/2026
 ### Novidades
-  - Adicionar funções internas da Senior para o *contexto* ERP.
+  - Adicionar funções internas para o *contexto* ERP.
 
 ## [2.0.8] - 01/07/2026
 ### Atualizar
-  - Corrigir o *contexto* de diversas funções internas da Senior.
+  - Corrigir o *contexto* de diversas funções internas.
 
 ## [2.0.7] - 01/07/2026
 ### Novidades
@@ -65,9 +100,9 @@ Alterações realizadas na extensão.
   - `--user-data-dir=%TEMP%\vscode-language-lsp-edh\user-data` — perfil do EDH isolado em diretório temporário do sistema, facilitando limpeza por processos de manutenção do sistema.
   - `--extensions-dir=%TEMP%\vscode-language-lsp-edh\extensions` — pasta de extensões do EDH isolada em `%TEMP%`; evita que as extensões do usuário conflitem com o ambiente de desenvolvimento e permite descarte automático.
 
-Motivação e notas técnicas:
-- O EDH não lê extensões do `extensions-dir` como substituto de `--extensionDevelopmentPath`; esta última é necessária para carregar a extensão em desenvolvimento. A combinação das flags acima isola o ambiente (configurações e extensões) e mantém apenas a extensão em desenvolvimento ativa, reduzindo interferência de extensões instaladas pelo usuário.
-- Usar diretórios temporários (`%TEMP%`) facilita que o conteúdo seja removido por garbage collectors do SO ou por scripts de limpeza, evitando acúmulo de perfis de desenvolvimento.
+  #### Motivação e notas técnicas:
+  - O EDH não lê extensões do `extensions-dir` como substituto de `--extensionDevelopmentPath`; esta última é necessária para carregar a extensão em desenvolvimento. A combinação das flags acima isola o ambiente (configurações e extensões) e mantém apenas a extensão em desenvolvimento ativa, reduzindo interferência de extensões instaladas pelo usuário.
+  - Usar diretórios temporários (`%TEMP%`) facilita que o conteúdo seja removido por garbage collectors do SO ou por scripts de limpeza, evitando acúmulo de perfis de desenvolvimento.
 
 
 ## [2.0.5] - 11/06/2026
