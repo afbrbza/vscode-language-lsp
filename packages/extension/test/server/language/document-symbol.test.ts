@@ -180,4 +180,24 @@ describe('document symbols', () => {
       })
     ]);
   });
+  it('keeps implicit user variables and omits internal variables from assignments', async () => {
+    const result = await compileSingleFile({
+      filePath: sourcePath,
+      system: 'HCM',
+      text: [
+        'Definir Alfa aResultado;',
+        'aResultado = "ok";',
+        'WEB_HTML = aResultado;',
+        'nImplicita = 1;'
+      ].join('\n'),
+      includeSemantics: false
+    });
+
+    const tree = buildDocumentSymbolTree(result.symbols ?? [], sourcePath);
+
+    expect(tree.map((item) => [item.name, item.detail])).toEqual([
+      ['aResultado', 'Alfa'],
+      ['nImplicita', 'Numero']
+    ]);
+  });
 });
