@@ -518,8 +518,9 @@ export function registerLanguageHandlers(deps: RegisterLanguageHandlersDeps): vo
     {
       const symbols = await getDocumentSymbols(doc);
       return buildDocumentSymbolTree(symbols, toFsPath(doc.uri));
-    } catch
+    } catch (error)
     {
+      sendLog('error', `documentSymbol: erro ${String(error)}`, undefined, toFsPath(doc.uri));
       return [];
     }
   });
@@ -545,7 +546,6 @@ export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): 
     }
   }
 
-  // FuncImpl entries → Function kind with children
   const topLevel: DocumentSymbol[] = [];
   const usedVars = new Set<SymbolInfo>();
 
@@ -556,25 +556,10 @@ export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): 
       name: func.name,
       kind: SymbolKind.Function,
       range: fr,
-      selectionRange: fr,
-      detail: func.typeName !== 'Desconhecido' ? func.typeName : undefined,
-      children: []
+      selectionRange: func.nameRange ?? fr,
+      detail: 'Implementação',
+      children: buildParameterDocumentSymbols(func, fr)
     };
-
-    if (func.params)
-    {
-      for (const p of func.params)
-      {
-        const pr = p.range ?? p.nameRange ?? fr;
-        ds.children!.push({
-          name: p.name,
-          kind: SymbolKind.Variable,
-          range: pr,
-          selectionRange: pr,
-          detail: p.typeName !== 'Desconhecido' ? p.typeName : undefined
-        });
-      }
-    }
 
     for (const v of plainVars)
     {
@@ -584,7 +569,7 @@ export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): 
           name: v.name,
           kind: SymbolKind.Variable,
           range: v.range!,
-          selectionRange: v.range!,
+          selectionRange: v.nameRange ?? v.range!,
           detail: v.typeName !== 'Desconhecido' ? v.typeName : undefined
         });
         usedVars.add(v);
@@ -594,19 +579,19 @@ export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): 
     topLevel.push(ds);
   }
 
-  // FuncDecl entries → Variable kind (like a function-typed variable)
   for (const decl of funcDecls)
   {
+    const dr = decl.range!;
     topLevel.push({
       name: decl.name,
-      kind: SymbolKind.Variable,
-      range: decl.range!,
-      selectionRange: decl.range!,
-      detail: 'Funcao'
+      kind: SymbolKind.Function,
+      range: dr,
+      selectionRange: decl.nameRange ?? dr,
+      detail: 'Declaração',
+      children: buildParameterDocumentSymbols(decl, dr)
     });
   }
 
-  // Top‑level variables not inside any function
   for (const v of plainVars)
   {
     if (!usedVars.has(v))
@@ -615,13 +600,27 @@ export function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): 
         name: v.name,
         kind: SymbolKind.Variable,
         range: v.range!,
-        selectionRange: v.range!,
+        selectionRange: v.nameRange ?? v.range!,
         detail: v.typeName !== 'Desconhecido' ? v.typeName : undefined
       });
     }
   }
 
   return topLevel;
+}
+
+function buildParameterDocumentSymbols(func: SymbolInfo, fallbackRange: Range): DocumentSymbol[]
+{
+  return (func.params ?? []).map((param) => {
+    const paramRange = param.range ?? param.nameRange ?? fallbackRange;
+    return {
+      name: param.name,
+      kind: SymbolKind.Variable,
+      range: paramRange,
+      selectionRange: param.nameRange ?? paramRange,
+      detail: param.typeName !== 'Desconhecido' ? param.typeName : undefined
+    };
+  });
 }
 
 function rangeStartOrd(r: Range): number
