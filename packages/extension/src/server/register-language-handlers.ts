@@ -1,26 +1,28 @@
-import {
-  CompletionItem,
-  CompletionItemKind,
-  MarkupKind,
-  SymbolKind,
-  type CompletionParams,
-  type Connection,
-  type DefinitionParams,
-  type DocumentSymbol,
-  type DocumentSymbolParams,
-  type Hover,
-  type HoverParams,
-  type ImplementationParams,
-  type Location,
-  type Position,
-  type PrepareRenameParams,
-  type Range,
-  type RenameParams,
-  type SignatureHelp,
-  type SignatureHelpParams,
-  type TextEdit,
-  type WorkspaceEdit
-} from 'vscode-languageserver/node';
+import
+  {
+    CompletionItem,
+    CompletionItemKind,
+    MarkupKind,
+    SymbolKind,
+    SymbolTag,
+    type CompletionParams,
+    type Connection,
+    type DefinitionParams,
+    type DocumentSymbol,
+    type DocumentSymbolParams,
+    type Hover,
+    type HoverParams,
+    type ImplementationParams,
+    type Location,
+    type Position,
+    type PrepareRenameParams,
+    type Range,
+    type RenameParams,
+    type SignatureHelp,
+    type SignatureHelpParams,
+    type TextEdit,
+    type WorkspaceEdit
+  } from 'vscode-languageserver/node';
 import type { InternalSignatureDoc, SymbolInfo } from '@lsp/compiler';
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { ResolvedContext } from './server-runtime';
@@ -569,7 +571,8 @@ function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): Documen
           name: p.name,
           kind: SymbolKind.Variable,
           range: pr,
-          selectionRange: pr
+          selectionRange: pr,
+          detail: p.typeName !== 'Desconhecido' ? p.typeName : undefined
         });
       }
     }
