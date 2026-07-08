@@ -74,6 +74,34 @@ function collectFromStatement(stmt: StatementNode, ctx: SymbolCollectContext): v
       range: stmt.range,
       sourcePath: stmt.sourcePath
     });
+    return;
+  }
+  if (stmt.kind === 'ExprStmt')
+  {
+    if (stmt.expr.kind === 'Identifier')
+    {
+      ctx.symbols.push({
+        kind: 'variable',
+        name: stmt.expr.name,
+        nameNormalized: stmt.expr.nameNormalized,
+        typeName: 'Numero',
+        range: stmt.range,
+        sourcePath: stmt.sourcePath
+      });
+      return;
+    }
+    if (stmt.expr.kind === 'Binary' && stmt.expr.operator === '=' && stmt.expr.left.kind === 'Identifier')
+    {
+      ctx.symbols.push({
+        kind: 'variable',
+        name: stmt.expr.left.name,
+        nameNormalized: stmt.expr.left.nameNormalized,
+        typeName: 'Numero',
+        range: stmt.range,
+        sourcePath: stmt.sourcePath
+      });
+      return;
+    }
   }
 }
 
