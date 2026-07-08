@@ -2,6 +2,44 @@
 
 Alterações realizadas na extensão.
 
+## [2.0.12] - 08/07/2026
+### Novidades
+  - Adicionar 34 funções do **Gerador de Relatórios** (tecnologia 5.10.4) ao contexto HCM:
+    - `AdicionaDadosGrade`
+    - `AlteraControle`
+    - `CancelarRelatorio`
+    - `CarregaImagemControle`
+    - `CarregaImgVetorialControle`
+    - `CodigoEspNivel`
+    - `ConfiguraPontoGrafico`
+    - `CriaView`
+    - `DataInicialFinal`
+    - `DateToDB`
+    - `DeleteFieldSQL`
+    - `DesCamLista`
+    - `DetPrimConector`
+    - `InsClauSQLCampoDireto`
+    - `InsClauSQLField`
+    - `InsClauSQLFrom`
+    - `InsClauSQLGroupBy`
+    - `InsClauSQLOrderBy`
+    - `InsClauSQLWhere`
+    - `InsEspAlinhDireita`
+    - `LimpaDadosGrade`
+    - `LimpaDadosGrafico`
+    - `ListaSecao`
+    - `MontarSQLHisCampo`
+    - `MontarSQLHisCampoSeq`
+    - `OrdenacaoSelecionada`
+    - `PreenchePagina`
+    - `RetornaCampoAlfaTabela`
+    - `RetornaCampoNumeroTabela`
+    - `SaltarPagina`
+    - `SelecionaImpressora`
+    - `SubstituiFrom`
+    - `TruncaDadosGrade`
+    - `UltimoRegistro`
+
 ## [2.0.11] - 07/07/2026
 ### Novidades
   - Símbolos implícitos de `Numero`: variáveis declaradas via `v_numero;` ou `v_numero = 0;` (sem `Definir Numero`) agora aparecem no OUTLINE como símbolos do tipo *Variable*.
@@ -73,7 +111,8 @@ Motivação e notas técnicas:
 
 ## [2.0.3] - 28/05/2026
 ### Atualizar
-  - Ajustar o formatador para normalizar operadores lógicos (`e`/`ou`) em expressões multilinha de `Se`, `Enquanto` e `Para`, movendo o operador do fim da linha anterior para o início da linha de continuação.
+  - Ajustar o formatador para normalizar operadores lógicos (`e`/`ou`) em expressões multilinha de `Se`
+  - `Enquanto` e `Para`, movendo o operador do fim da linha anterior para o início da linha de continuação.
   - Preservar comentários inline ao normalizar expressões lógicas multilinha, mantendo o padrão TS-like do formatador.
 
 ## [2.0.2] - 06/05/2026
