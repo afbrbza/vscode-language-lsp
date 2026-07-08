@@ -1132,7 +1132,7 @@ export async function compileSingleFile(input: {
 }
 
 export { fileBelongsToContext, normalizePathKey, type ValidationContextConfig, type ContentOverrides };
-export { getContextSymbols, type SymbolInfo };
+export { getContextSymbols, getProgramSymbols, type SymbolInfo };
 export { getCursorMethodNames };
 export { hashText } from './utils/hash-text';
 export
@@ -1144,6 +1144,7 @@ export
 } from './internals/members/lista-methods';
 export { SEMANTIC_TOKEN_TYPES, SEMANTIC_TOKEN_MODIFIERS, type SemanticOccurrence, type SemanticTokenType, type SemanticTokenModifier } from './semantic/semantic-tokens';
 export { collectEmbeddedSqlSemanticOccurrences, collectEmbeddedSqlSemanticDebugReport } from './semantic/embedded-sql-occurrences';
+export { parseSingleFile, type ParseError, type ParseErrorCode, type ParsedFile } from './parser/parser';
 export {
   formatDocument,
   formatDocumentWithDetails,

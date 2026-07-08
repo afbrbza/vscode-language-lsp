@@ -2,9 +2,12 @@ import {
   CompletionItem,
   CompletionItemKind,
   MarkupKind,
+  SymbolKind,
   type CompletionParams,
   type Connection,
   type DefinitionParams,
+  type DocumentSymbol,
+  type DocumentSymbolParams,
   type Hover,
   type HoverParams,
   type ImplementationParams,
@@ -47,6 +50,7 @@ type RegisterLanguageHandlersDeps = {
   isInsideStringLiteral(line: string, position: number): boolean;
   getSymbolsForContext(context: ResolvedContext): Promise<SymbolInfo[]>;
   getSymbolsForFallbackDocument(doc: TextDocument): Promise<SymbolInfo[]>;
+  getDocumentSymbols(doc: TextDocument): Promise<SymbolInfo[]>;
   completionItem(kind: CompletionItemKind | number, label: string, insertText?: string): CompletionItem;
   snippetItem(label: string, snippet: string, detail?: string): CompletionItem;
   listaMethodCompletionItem(method: unknown): CompletionItem;
@@ -98,6 +102,7 @@ export function registerLanguageHandlers(deps: RegisterLanguageHandlersDeps): vo
     isInsideStringLiteral,
     getSymbolsForContext,
     getSymbolsForFallbackDocument,
+    getDocumentSymbols,
     completionItem,
     snippetItem,
     listaMethodCompletionItem,
@@ -503,4 +508,130 @@ export function registerLanguageHandlers(deps: RegisterLanguageHandlersDeps): vo
       return null;
     }
   });
+
+  connection.onDocumentSymbol(async (params: DocumentSymbolParams): Promise<DocumentSymbol[]> =>
+  {
+    const doc = documents.get(params.textDocument.uri);
+    if (!doc) return [];
+    try
+    {
+      const symbols = await getDocumentSymbols(doc);
+      return buildDocumentSymbolTree(symbols, toFsPath(doc.uri));
+    } catch
+    {
+      return [];
+    }
+  });
+}
+
+function buildDocumentSymbolTree(symbols: SymbolInfo[], fsPath: string): DocumentSymbol[]
+{
+  const docSymbols = symbols.filter((s) => s.sourcePath === fsPath && s.range);
+
+  const funcImpls: SymbolInfo[] = [];
+  const funcDecls: SymbolInfo[] = [];
+  const plainVars: SymbolInfo[] = [];
+
+  for (const s of docSymbols)
+  {
+    if (s.kind === 'function')
+    {
+      if (s.implemented) funcImpls.push(s);
+      if (s.declared) funcDecls.push(s);
+    } else
+    {
+      plainVars.push(s);
+    }
+  }
+
+  // FuncImpl entries → Function kind with children
+  const topLevel: DocumentSymbol[] = [];
+  const usedVars = new Set<SymbolInfo>();
+
+  for (const func of funcImpls)
+  {
+    const fr = func.range!;
+    const ds: DocumentSymbol = {
+      name: func.name,
+      kind: SymbolKind.Function,
+      range: fr,
+      selectionRange: fr,
+      detail: func.typeName !== 'Desconhecido' ? func.typeName : undefined,
+      children: []
+    };
+
+    if (func.params)
+    {
+      for (const p of func.params)
+      {
+        const pr = p.range ?? p.nameRange ?? fr;
+        ds.children!.push({
+          name: p.name,
+          kind: SymbolKind.Variable,
+          range: pr,
+          selectionRange: pr
+        });
+      }
+    }
+
+    for (const v of plainVars)
+    {
+      if (rangeContains(fr, v.range!))
+      {
+        ds.children!.push({
+          name: v.name,
+          kind: SymbolKind.Variable,
+          range: v.range!,
+          selectionRange: v.range!,
+          detail: v.typeName !== 'Desconhecido' ? v.typeName : undefined
+        });
+        usedVars.add(v);
+      }
+    }
+
+    topLevel.push(ds);
+  }
+
+  // FuncDecl entries → Variable kind (like a function-typed variable)
+  for (const decl of funcDecls)
+  {
+    topLevel.push({
+      name: decl.name,
+      kind: SymbolKind.Variable,
+      range: decl.range!,
+      selectionRange: decl.range!,
+      detail: 'Funcao'
+    });
+  }
+
+  // Top‑level variables not inside any function
+  for (const v of plainVars)
+  {
+    if (!usedVars.has(v))
+    {
+      topLevel.push({
+        name: v.name,
+        kind: SymbolKind.Variable,
+        range: v.range!,
+        selectionRange: v.range!,
+        detail: v.typeName !== 'Desconhecido' ? v.typeName : undefined
+      });
+    }
+  }
+
+  return topLevel;
+}
+
+function rangeStartOrd(r: Range): number
+{
+  return r.start.line * 1_000_000 + r.start.character;
+}
+
+function rangeContains(outer: Range, inner: Range): boolean
+{
+  const oStart = rangeStartOrd(outer);
+  const oEnd = outer.end.line * 1_000_000 + outer.end.character;
+  const iStart = rangeStartOrd(inner);
+  const iEnd = inner.end.line * 1_000_000 + inner.end.character;
+  return iStart >= oStart && iEnd <= oEnd;
 }
