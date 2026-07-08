@@ -2,13 +2,20 @@
 
 Alterações realizadas na extensão.
 
-## [2.0.11] - 07/07/2026
+## [2.0.11] - 08/07/2026
 ### Novidades
   - Símbolos implícitos de `Numero`: variáveis declaradas via `v_numero;` ou `v_numero = 0;` (sem `Definir Numero`) agora aparecem no OUTLINE como símbolos do tipo *Variable*.
 
-## [2.0.10] - 07/07/2026
+### Atualizações
+  - Aprimorado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE):
+    - Declarações e implementações de funções são exibidas separadamente como símbolos do tipo *Function*.
+    - Variáveis com o mesmo nome são preservadas quando pertencem a escopos diferentes.
+    - A navegação seleciona diretamente o identificador da função, parâmetro ou variável.
+    - Resultados são reutilizados enquanto a versão do documento não for alterada.
+
+## [2.0.10] - 08/07/2026
 ### Novidades
-  - Implementado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE) para arquivos `.lsp` e `.lspt`.
+  - Implementado o provider `DocumentSymbol` (Ctrl+Shift+O / OUTLINE).
     - Funções (`funcao NOME(); { }`) exibidas como símbolos do tipo *Function*, com parâmetros e variáveis do corpo como filhos na árvore.
     - Declarações (`Definir funcao NOME();`) exibidas como símbolos do tipo *Variable* com detail "Funcao".
     - Variáveis de escopo global exibidas no nível raiz.

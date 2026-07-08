@@ -2925,18 +2925,40 @@ async function getSymbolsForFallbackDocument(doc: TextDocument): Promise<SymbolI
   return result.symbols ?? [];
 }
 
+const documentSymbolsCache = new WeakMap<TextDocument, {
+  version: number;
+  promise: Promise<SymbolInfo[]>;
+}>();
+
 async function getDocumentSymbols(doc: TextDocument): Promise<SymbolInfo[]>
 {
-  const filePath = toFsPath(doc.uri);
-  const context = findContextForFile(filePath);
-  const system = getCompilerSystemForFile(filePath, context);
-  const result = await compileSingleFile({
-    filePath,
-    text: doc.getText(),
-    system,
-    includeSemantics: false
-  });
-  return result.symbols ?? [];
+  const cached = documentSymbolsCache.get(doc);
+  if (cached?.version === doc.version) return cached.promise;
+
+  const version = doc.version;
+  const promise = (async () => {
+    const filePath = toFsPath(doc.uri);
+    const context = findContextForFile(filePath);
+    const system = getCompilerSystemForFile(filePath, context);
+    const result = await compileSingleFile({
+      filePath,
+      text: doc.getText(),
+      system,
+      includeSemantics: false
+    });
+    return result.symbols ?? [];
+  })();
+
+  documentSymbolsCache.set(doc, { version, promise });
+  try
+  {
+    return await promise;
+  } catch (error)
+  {
+    const current = documentSymbolsCache.get(doc);
+    if (current?.promise === promise) documentSymbolsCache.delete(doc);
+    throw error;
+  }
 }
 
 async function getSymbolQueryScopeForDocument(doc: TextDocument): Promise<{
